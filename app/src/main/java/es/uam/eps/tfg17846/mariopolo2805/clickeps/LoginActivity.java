@@ -1,7 +1,6 @@
 package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -30,7 +29,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         setContentView(R.layout.activity_login);
         usernameEditText = (EditText) findViewById(R.id.username_login_field);
         passwordEditText = (EditText) findViewById(R.id.password_login_field);
-        progressBar = (ProgressBar) findViewById(R.id.round_progress);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
     }
 
 

@@ -1,13 +1,11 @@
 package es.uam.eps.tfg17846.mariopolo2805.clickeps.helper;
 
-public class Question {
+import java.io.Serializable;
+
+public class Question implements Serializable {
 
     private String id;
     private String title;
-
-    public Question() {
-        super();
-    }
 
     public Question(String id, String title) {
         super();
