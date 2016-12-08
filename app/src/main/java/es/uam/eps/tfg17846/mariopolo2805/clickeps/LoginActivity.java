@@ -3,6 +3,7 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -60,6 +61,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                                 } else {
                                     // TODO guardar al usuario loggeado en una preferencia (estas estan ocultas)
                                     Log.e("TODO", "guardar al usuario para siguientes pantallas");
+
+                                    startActivity(new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONLISTACTIVITY"));
                                 }
                             }
                         }, new Response.ErrorListener() {

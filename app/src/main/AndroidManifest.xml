@@ -17,17 +17,26 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".LoginActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="es.uam.eps.tfg17846.mariopolo2805.clickeps.LOGINACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
+        <activity
+            android:name=".QuestionListActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONLISTACTIVITY" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

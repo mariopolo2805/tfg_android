@@ -16,6 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:text="Login"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.WindowTitle"
         android:textSize="24sp" />
 
     <EditText
