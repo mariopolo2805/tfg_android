@@ -1,50 +1,41 @@
 package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import java.util.Arrays;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
-import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Question;
-
 import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Constants;
+import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Group;
+import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Question;
+import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Section;
+import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.ServerInterface;
 
 public class QuestionListActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
     private ListView questionList;
+    private List<Question> questions;
+    private QuestionItemAdapter adapter;
+
     private String userId;
-    //    private List<Question> questions = new ArrayList<>();
-    // TODO mocked data START ZONE
-    private Question mock[] = {
-            new Question("id1", "AAA"),
-            new Question("id2", "BBB"),
-            new Question("id3", "C CCCC"),
-            new Question("id4", "D fdsag"),
-            new Question("id6", "E vaafewg"),
-            new Question("id7", "F c23"),
-            new Question("id8", "G gew"),
-            new Question("id9", "H vaw"),
-            new Question("id10", "I va"),
-            new Question("id11", "J wnab"),
-            new Question("id12", "K vmak"),
-            new Question("id13", "L gma"),
-            new Question("id14", "M bsdfl"),
-            new Question("id15", "N bnsel"),
-            new Question("id16", "O mbreal"),
-            new Question("id17", "P hwne"),
-            new Question("id18", "Q g43q"),
-            new Question("id19", "R ewqg"),
-            new Question("id20", "S fdb")
-    };
-    private List<Question> questions = Arrays.asList(mock);
-    // TODO mocked data END ZONE
+    private Group group;
+    private Section section;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,33 +44,68 @@ public class QuestionListActivity extends AppCompatActivity {
 
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         questionList = (ListView) findViewById(R.id.question_list);
+        questions = new ArrayList<>();
 
         userId = getIntent().getExtras().getString(Constants.USERID_KEY);
+        group = (Group) getIntent().getExtras().getSerializable(Constants.GROUP_KEY);
+        section = (Section) getIntent().getExtras().getSerializable(Constants.SECTION_KEY);
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        // TODO make request
         progressBar.setVisibility(View.VISIBLE);
 
-        progressBar.setVisibility(View.INVISIBLE);
+        ServerInterface server = ServerInterface.getServer(QuestionListActivity.this);
+        server.questions(// TODO review this with specific group and section
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        try {
+                            questions.clear();
+                            JSONArray questionJSONList = new JSONArray(s);
+                            for (int i = 0; i < questionJSONList.length(); i++) {
+                                JSONObject questionJSON = questionJSONList.getJSONObject(i);
+                                Question q = new Question(
+                                        questionJSON.getString("idQuestion"),
+                                        questionJSON.getString("text"),
+                                        questionJSON.getString("answerA"),
+                                        questionJSON.getString("answerB"),
+                                        questionJSON.getString("answerC"),
+                                        questionJSON.getString("answerD"),
+                                        questionJSON.getString("solution")/*,
+                                        DateFormat.parse(questionJSON.getString("expiration"))*/);
+                                questions.add(q);
+                            }
 
-        final QuestionItemAdapter adapter = new QuestionItemAdapter(this, questions);
-        questionList.setAdapter(adapter);
+                            adapter = new QuestionItemAdapter(QuestionListActivity.this, questions);
+                            questionList.setAdapter(adapter);
 
-        questionList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Question selectedQuestion = (Question) adapter.getItem(i);
-                Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONACTIVITY");
-                intent.putExtra(Constants.USERID_KEY, userId);
-                intent.putExtra(Constants.QUESTION_KEY, selectedQuestion);
-                startActivity(intent);
-            }
-        });
+                            questionList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                    Question selectedQuestion = (Question) adapter.getItem(i);
+                                    Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONACTIVITY");
+                                    intent.putExtra(Constants.USERID_KEY, userId);
+                                    intent.putExtra(Constants.QUESTION_KEY, selectedQuestion);
+                                    startActivity(intent);
+                                }
+                            });
+                        } catch (Exception e) {
+                            progressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(QuestionListActivity.this, "Hubo un problema al solicitar las preguntas", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+                , new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
     }
-
 
 }

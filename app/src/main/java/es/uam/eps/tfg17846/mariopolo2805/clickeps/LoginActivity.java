@@ -45,7 +45,6 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 progressBar.setVisibility(View.VISIBLE);
                 server.login(
                         usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString(),
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String s) {
@@ -61,46 +60,34 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                                     });
                                     dialogBuilder.show();
                                 } else {
-                                    if (!s.isEmpty()) {
-                                        try {
-                                            JSONObject jsonObject = new JSONObject(s);
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(s);
 
-                                            String emailResponse = jsonObject.getString("email");
-                                            String passwordResponse = jsonObject.getString("password");
-                                            String userId = jsonObject.getString("idUser");
+                                        String emailResponse = jsonObject.getString("email");
+                                        String passwordResponse = jsonObject.getString("password");
+                                        String userId = jsonObject.getString("idUser");
 
-                                            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                                            byte[] bytes = digest.digest(passwordEditText.getText().toString().getBytes("UTF-8"));
-                                            StringBuilder hexString = new StringBuilder();
-                                            for (byte aByte : bytes) {
-                                                String hex = Integer.toHexString(0xff & aByte);
-                                                if (hex.length() == 1) hexString.append('0');
-                                                hexString.append(hex);
-                                            }
+                                        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                                        byte[] bytes = digest.digest(passwordEditText.getText().toString().getBytes("UTF-8"));
+                                        StringBuilder hexString = new StringBuilder();
+                                        for (byte aByte : bytes) {
+                                            String hex = Integer.toHexString(0xff & aByte);
+                                            if (hex.length() == 1) hexString.append('0');
+                                            hexString.append(hex);
+                                        }
 
-                                            if (hexString.toString().equals(passwordResponse)) {
-                                                if (emailResponse.contains("@estudiante.uam")) {
-                                                    Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONLISTACTIVITY");
-                                                    intent.putExtra(Constants.USERID_KEY, userId);
-                                                    startActivity(intent);
-                                                } else {
-                                                    Toast.makeText(LoginActivity.this, "Acceso solo autorizado a estudiantes", Toast.LENGTH_SHORT).show();
-                                                }
+                                        if (hexString.toString().equals(passwordResponse)) {
+                                            if (emailResponse.contains("@estudiante.uam")) {
+                                                Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.SUBJECTACTIVITY");
+                                                intent.putExtra(Constants.USERID_KEY, userId);
+                                                startActivity(intent);
                                             } else {
-                                                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
-                                                dialogBuilder.setTitle("Login");
-                                                dialogBuilder.setMessage("Usuario o contraseña incorrectos");
-                                                dialogBuilder.setNeutralButton("Atrás", new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                    }
-                                                });
-                                                dialogBuilder.show();
+                                                Toast.makeText(LoginActivity.this, "Acceso solo autorizado a estudiantes", Toast.LENGTH_SHORT).show();
                                             }
-                                        } catch (Exception e) {
+                                        } else {
                                             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
-                                            dialogBuilder.setTitle("Ooops!");
-                                            dialogBuilder.setMessage("Algo fue mal en la petición");
+                                            dialogBuilder.setTitle("Login");
+                                            dialogBuilder.setMessage("Usuario o contraseña incorrectos");
                                             dialogBuilder.setNeutralButton("Atrás", new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
@@ -108,7 +95,18 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                                             });
                                             dialogBuilder.show();
                                         }
+                                    } catch (Exception e) {
+                                        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                        dialogBuilder.setTitle("Ooops!");
+                                        dialogBuilder.setMessage("Algo fue mal en la petición");
+                                        dialogBuilder.setNeutralButton("Atrás", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                            }
+                                        });
+                                        dialogBuilder.show();
                                     }
+
                                 }
                             }
                         }

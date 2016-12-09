@@ -9,9 +9,6 @@ import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ServerInterface {
 
     private static ServerInterface serverInterface;
@@ -27,10 +24,18 @@ public class ServerInterface {
         return serverInterface;
     }
 
-    public void login(final String username, final String password,
+    public void login(final String username,
                       Listener<String> callback,
                       ErrorListener errorCallback) {
         String url = Constants.BASE_URL + Constants.LOGIN_URI + "/" + username;
+
+        StringRequest request = new StringRequest(Request.Method.POST, url, callback, errorCallback);
+        queue.add(request);
+    }
+
+    public void questions(Listener<String> callback,
+                          ErrorListener errorCallback) {
+        String url = Constants.BASE_URL + Constants.QUESTIONS_URI;
 
         StringRequest request = new StringRequest(Request.Method.POST, url, callback, errorCallback);
         queue.add(request);

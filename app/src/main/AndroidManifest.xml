@@ -30,6 +30,24 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".SubjectActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="es.uam.eps.tfg17846.mariopolo2805.clickeps.SUBJECTACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SectionActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="es.uam.eps.tfg17846.mariopolo2805.clickeps.SECTIONACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".QuestionListActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait">

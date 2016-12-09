@@ -48,14 +48,9 @@ public class QuestionItemAdapter extends BaseAdapter {
         Question question = items.get(i);
 
         TextView title = (TextView) view.findViewById(R.id.question_title);
-        title.setText(question.getTitle());
+        title.setText(question.getQuestion());
 
         return view;
-    }
-
-    // TODO check if necessary
-    public void clear() {
-        items.clear();
     }
 
 }
