@@ -30,16 +30,9 @@ public class ServerInterface {
     public void login(final String username, final String password,
                       Listener<String> callback,
                       ErrorListener errorCallback) {
-        String url = Constants.BASE_URL + Constants.LOGIN_URI;
+        String url = Constants.BASE_URL + Constants.LOGIN_URI + "/" + username;
 
-        StringRequest request = new StringRequest(Request.Method.POST, url, callback, errorCallback) {
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put(Constants.USERNAME_KEY, username);
-                params.put(Constants.PASSWORD_KEY, password);
-                return params;
-            }
-        };
+        StringRequest request = new StringRequest(Request.Method.POST, url, callback, errorCallback);
         queue.add(request);
     }
 

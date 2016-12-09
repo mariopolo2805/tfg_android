@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -15,6 +14,11 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
+import org.json.JSONObject;
+
+import java.security.MessageDigest;
+
+import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Constants;
 import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.ServerInterface;
 
 public class LoginActivity extends AppCompatActivity implements OnClickListener {
@@ -46,7 +50,6 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                             @Override
                             public void onResponse(String s) {
                                 progressBar.setVisibility(View.INVISIBLE);
-                                // TODO el servidor debe devolver algo para que sea valido el usuario (un id, un ok), si cadena vacia, usuario incorrecto
                                 if (s.isEmpty()) {
                                     AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
                                     dialogBuilder.setTitle("Login");
@@ -58,19 +61,65 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                                     });
                                     dialogBuilder.show();
                                 } else {
-                                    // TODO guardar al usuario loggeado en una preferencia (estas estan ocultas)
-                                    Log.e("TODO", "guardar al usuario para siguientes pantallas");
+                                    if (!s.isEmpty()) {
+                                        try {
+                                            JSONObject jsonObject = new JSONObject(s);
 
-                                    startActivity(new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONLISTACTIVITY"));
+                                            String emailResponse = jsonObject.getString("email");
+                                            String passwordResponse = jsonObject.getString("password");
+                                            String userId = jsonObject.getString("idUser");
+
+                                            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                                            byte[] bytes = digest.digest(passwordEditText.getText().toString().getBytes("UTF-8"));
+                                            StringBuilder hexString = new StringBuilder();
+                                            for (byte aByte : bytes) {
+                                                String hex = Integer.toHexString(0xff & aByte);
+                                                if (hex.length() == 1) hexString.append('0');
+                                                hexString.append(hex);
+                                            }
+
+                                            if (hexString.toString().equals(passwordResponse)) {
+                                                if (emailResponse.contains("@estudiante.uam")) {
+                                                    Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONLISTACTIVITY");
+                                                    intent.putExtra(Constants.USERID_KEY, userId);
+                                                    startActivity(intent);
+                                                } else {
+                                                    Toast.makeText(LoginActivity.this, "Acceso solo autorizado a estudiantes", Toast.LENGTH_SHORT).show();
+                                                }
+                                            } else {
+                                                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                dialogBuilder.setTitle("Login");
+                                                dialogBuilder.setMessage("Usuario o contraseña incorrectos");
+                                                dialogBuilder.setNeutralButton("Atrás", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                    }
+                                                });
+                                                dialogBuilder.show();
+                                            }
+                                        } catch (Exception e) {
+                                            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                            dialogBuilder.setTitle("Ooops!");
+                                            dialogBuilder.setMessage("Algo fue mal en la petición");
+                                            dialogBuilder.setNeutralButton("Atrás", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                }
+                                            });
+                                            dialogBuilder.show();
+                                        }
+                                    }
                                 }
                             }
-                        }, new Response.ErrorListener() {
+                        }
+                        , new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError volleyError) {
                                 progressBar.setVisibility(View.INVISIBLE);
-                                Toast.makeText(LoginActivity.this, "Hubo un problema al realizar la conexión", Toast.LENGTH_LONG).show();
                             }
-                        });
+                        }
+
+                );
                 break;
         }
     }

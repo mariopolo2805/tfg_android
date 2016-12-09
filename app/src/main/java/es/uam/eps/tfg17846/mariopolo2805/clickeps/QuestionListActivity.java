@@ -19,6 +19,7 @@ public class QuestionListActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
     private ListView questionList;
+    private String userId;
     //    private List<Question> questions = new ArrayList<>();
     // TODO mocked data START ZONE
     private Question mock[] = {
@@ -52,6 +53,8 @@ public class QuestionListActivity extends AppCompatActivity {
 
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         questionList = (ListView) findViewById(R.id.question_list);
+
+        userId = getIntent().getExtras().getString(Constants.USERID_KEY);
     }
 
     @Override
@@ -71,6 +74,7 @@ public class QuestionListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Question selectedQuestion = (Question) adapter.getItem(i);
                 Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONACTIVITY");
+                intent.putExtra(Constants.USERID_KEY, userId);
                 intent.putExtra(Constants.QUESTION_KEY, selectedQuestion);
                 startActivity(intent);
             }
