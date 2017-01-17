@@ -1,11 +1,14 @@
 package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,11 +25,12 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
     private RadioButton answerBRadio;
     private RadioButton answerCRadio;
     private RadioButton answerDRadio;
+    private Button ncBtn;
+    private Button submitBtn;
     private Question question;
     private String userId;
 
     private String response;
-    // TODO check if was answered and disable if it was but show answer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +41,9 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
         answerBRadio = (RadioButton) findViewById(R.id.answerB);
         answerCRadio = (RadioButton) findViewById(R.id.answerC);
         answerDRadio = (RadioButton) findViewById(R.id.answerD);
+        ncBtn = (Button) findViewById(R.id.nc);
+        submitBtn = (Button) findViewById(R.id.submit);
+        submitBtn.setEnabled(false);
 
         question = (Question) getIntent().getExtras().getSerializable(QUESTION_KEY);
         userId = getIntent().getExtras().getString(USERID_KEY);
@@ -46,28 +53,83 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
         answerBRadio.setText(question.getOptionB());
         answerCRadio.setText(question.getOptionC());
         answerDRadio.setText(question.getOptionD());
-    }
 
+        if(question.getSelection() != null) {
+            answerARadio.setEnabled(false);
+            answerBRadio.setEnabled(false);
+            answerCRadio.setEnabled(false);
+            answerDRadio.setEnabled(false);
+            ncBtn.setEnabled(false);
+            submitBtn.setEnabled(false);
+
+            Drawable img = ContextCompat.getDrawable(this, android.R.drawable.presence_online);
+            img.setBounds(0, 0, 60, 60);
+            switch (question.getSolution()) {
+                case "A":
+                    answerARadio.setCompoundDrawables(null, null, img, null);
+                    break;
+                case "B":
+                    answerBRadio.setCompoundDrawables(null, null, img, null);
+                    break;
+                case "C":
+                    answerCRadio.setCompoundDrawables(null, null, img, null);
+                    break;
+                case "D":
+                    answerDRadio.setCompoundDrawables(null, null, img, null);
+                    break;
+            }
+
+            RadioButton answered = null;
+            switch (question.getSelection()) {
+                case "A":
+                    answered = answerARadio;
+                    break;
+                case "B":
+                    answered = answerBRadio;
+                    break;
+                case "C":
+                    answered = answerCRadio;
+                    break;
+                case "D":
+                    answered = answerDRadio;
+                    break;
+            }
+
+            if(answered != null) {
+                answered.toggle();
+                answered.setEnabled(true);
+                if(!question.getSelection().equals(question.getSolution())) {
+                    img = ContextCompat.getDrawable(this, android.R.drawable.ic_delete);
+                    img.setBounds(0, 0, 60, 60);
+                    answered.setCompoundDrawables(null, null, img, null);
+                }
+            }
+        }
+    }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.answerA:
                 response = "A";
+                submitBtn.setEnabled(true);
                 break;
             case R.id.answerB:
                 response = "B";
+                submitBtn.setEnabled(true);
                 break;
             case R.id.answerC:
                 response = "C";
+                submitBtn.setEnabled(true);
                 break;
             case R.id.answerD:
                 response = "D";
+                submitBtn.setEnabled(true);
                 break;
             case R.id.nc:
                 AlertDialog.Builder ncDialogBuilder = new AlertDialog.Builder(this);
                 ncDialogBuilder.setTitle("No contestar");
-                ncDialogBuilder.setMessage("¿Está seguro que no desea contestar a la pregunta? (Esta acción no se podrá modificar)");
+                ncDialogBuilder.setMessage("¿Está seguro que desea no contestar a la pregunta? (Esta acción no se podrá modificar)");
                 ncDialogBuilder.setPositiveButton("Seguro, no contestar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

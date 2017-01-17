@@ -33,11 +33,35 @@ public class ServerInterface {
         queue.add(request);
     }
 
-    public void questions(Listener<String> callback,
+    public void groupsOfStudent(final String userId, Listener<String> callback,
                           ErrorListener errorCallback) {
-        String url = Constants.BASE_URL + Constants.QUESTIONS_URI;
+        String url = Constants.BASE_URL + Constants.GROUPS_URI + "/" + userId;
 
-        StringRequest request = new StringRequest(Request.Method.POST, url, callback, errorCallback);
+        StringRequest request = new StringRequest(Request.Method.GET, url, callback, errorCallback);
+        queue.add(request);
+    }
+
+    public void sectionsOfGroup(final String groupId, Listener<String> callback,
+                                ErrorListener errorCallback) {
+        String url = Constants.BASE_URL + Constants.SECTIONS_URI + "/" + groupId;
+
+        StringRequest request = new StringRequest(Request.Method.GET, url, callback, errorCallback);
+        queue.add(request);
+    }
+
+    public void questionsOfStudent(final String userId, final String sectionId,
+                                   Listener<String> callback, ErrorListener errorCallback) {
+        String url = Constants.BASE_URL + Constants.QUESTIONS_URI + "/" + userId + "/section/" + sectionId;
+
+        StringRequest request = new StringRequest(Request.Method.GET, url, callback, errorCallback);
+        queue.add(request);
+    }
+
+    public void answersOfStudent(final String userId, final String sectionId,
+                                   Listener<String> callback, ErrorListener errorCallback) {
+        String url = Constants.BASE_URL + Constants.ANSWERS_URI + "/" + userId + "/section/" + sectionId;
+
+        StringRequest request = new StringRequest(Request.Method.GET, url, callback, errorCallback);
         queue.add(request);
     }
 

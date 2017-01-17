@@ -2,13 +2,18 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Question;
 
@@ -49,6 +54,40 @@ public class QuestionItemAdapter extends BaseAdapter {
 
         TextView title = (TextView) view.findViewById(R.id.question_title);
         title.setText(question.getQuestion());
+
+        ImageView image = (ImageView) view.findViewById(R.id.question_icon);
+        final TextView timer = (TextView) view.findViewById(R.id.question_timer);
+        if(question.getSelection() != null) {
+            image.setImageResource(android.R.drawable.ic_lock_lock);
+            if (question.getSelection().equals(question.getSolution())) {
+                timer.setText("Respuesta correcta");
+            } else if (question.getSelection().equals("null")) {
+                timer.setText("No sabe / No contesta");
+            } else {
+                timer.setText("Respuesta incorrecta");
+            }
+        } else {
+            Date today = new Date();
+            long millis = question.getExpiration().getTime() - today.getTime();
+            new CountDownTimer(millis, 1000) {
+                public void onTick(long millis) {
+                    long days = TimeUnit.MILLISECONDS.toDays(millis);
+                    if (days > 0) {
+                        timer.setText("Tiempo: " + days + " días");
+                    } else {
+                        String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis),
+                                TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                                TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+
+                        timer.setText("Tiempo: " + hms);
+                    }
+                }
+
+                public void onFinish() {
+                    timer.setText("Tiempo: Finalizado");
+                }
+            }.start();
+        }
 
         return view;
     }

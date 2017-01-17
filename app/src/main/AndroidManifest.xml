@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SubjectActivity"
+            android:name=".GroupActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait">
             <intent-filter>

@@ -12,16 +12,11 @@ public class Question implements Serializable {
     private String optionC;
     private String optionD;
     private String solution;
-    private Date endDate;
-// TODO add selected answer if it was answered
+    private Date expiration;
+    // Secondary atributes
+    private String selection;
 
-    public Question(String id, String question) {
-        super();
-        this.id = id;
-        this.question = question;
-    }
-
-    public Question(String id, String question, String optionA, String optionB, String optionC, String optionD, String solution/*, Date endDate*/) {
+    public Question(String id, String question, String optionA, String optionB, String optionC, String optionD, String solution, Date expiration) {
         this.id = id;
         this.question = question;
         this.optionA = optionA;
@@ -29,11 +24,11 @@ public class Question implements Serializable {
         this.optionC = optionC;
         this.optionD = optionD;
         this.solution = solution;
-//        this.endDate = endDate;
+        this.expiration = expiration;
+        this.selection = null;
     }
 
     public String getId() {
-
         return id;
     }
 
@@ -61,7 +56,15 @@ public class Question implements Serializable {
         return solution;
     }
 
-    public Date getEndDate() {
-        return endDate;
+    public Date getExpiration() {
+        return expiration;
+    }
+
+    public String getSelection() {
+        return selection;
+    }
+
+    public void setSelection(String selection) {
+        this.selection = selection;
     }
 }

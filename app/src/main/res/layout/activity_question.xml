@@ -56,7 +56,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/radio_group"
         android:onClick="onClick"
-        android:text="No contestar" />
+        android:text="No sabe / No contesta" />
 
     <Button
         android:id="@+id/submit"
