@@ -3,17 +3,31 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
 import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Question;
+import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.ServerInterface;
 
 import static es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Constants.QUESTION_KEY;
 import static es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Constants.USERID_KEY;
@@ -27,6 +41,7 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
     private RadioButton answerDRadio;
     private Button ncBtn;
     private Button submitBtn;
+    private ProgressBar progressBar;
     private Question question;
     private String userId;
 
@@ -44,6 +59,7 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
         ncBtn = (Button) findViewById(R.id.nc);
         submitBtn = (Button) findViewById(R.id.submit);
         submitBtn.setEnabled(false);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         question = (Question) getIntent().getExtras().getSerializable(QUESTION_KEY);
         userId = getIntent().getExtras().getString(USERID_KEY);
@@ -54,7 +70,18 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
         answerCRadio.setText(question.getOptionC());
         answerDRadio.setText(question.getOptionD());
 
-        if(question.getSelection() != null) {
+        TimeZone tz = TimeZone.getDefault();
+        Date now = new Date();
+        Date expiration;
+        int offsetFromUtc = tz.getOffset(now.getTime()) / (1000 * 60 * 60);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(question.getExpiration());
+        cal.add(Calendar.HOUR_OF_DAY, offsetFromUtc);
+        expiration = cal.getTime();
+
+        final Drawable successImg = ContextCompat.getDrawable(this, android.R.drawable.presence_online);
+
+        if(question.getSelection() != null || now.after(expiration)) {
             answerARadio.setEnabled(false);
             answerBRadio.setEnabled(false);
             answerCRadio.setEnabled(false);
@@ -62,48 +89,104 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
             ncBtn.setEnabled(false);
             submitBtn.setEnabled(false);
 
-            Drawable img = ContextCompat.getDrawable(this, android.R.drawable.presence_online);
-            img.setBounds(0, 0, 60, 60);
+            successImg.setBounds(0, 0, 60, 60);
             switch (question.getSolution()) {
                 case "A":
-                    answerARadio.setCompoundDrawables(null, null, img, null);
+                    answerARadio.setCompoundDrawables(null, null, successImg, null);
                     break;
                 case "B":
-                    answerBRadio.setCompoundDrawables(null, null, img, null);
+                    answerBRadio.setCompoundDrawables(null, null, successImg, null);
                     break;
                 case "C":
-                    answerCRadio.setCompoundDrawables(null, null, img, null);
+                    answerCRadio.setCompoundDrawables(null, null, successImg, null);
                     break;
                 case "D":
-                    answerDRadio.setCompoundDrawables(null, null, img, null);
+                    answerDRadio.setCompoundDrawables(null, null, successImg, null);
                     break;
             }
 
-            RadioButton answered = null;
-            switch (question.getSelection()) {
-                case "A":
-                    answered = answerARadio;
-                    break;
-                case "B":
-                    answered = answerBRadio;
-                    break;
-                case "C":
-                    answered = answerCRadio;
-                    break;
-                case "D":
-                    answered = answerDRadio;
-                    break;
-            }
+            if(question.getSelection() != null) {
+                RadioButton answered = null;
+                switch (question.getSelection()) {
+                    case "A":
+                        answered = answerARadio;
+                        break;
+                    case "B":
+                        answered = answerBRadio;
+                        break;
+                    case "C":
+                        answered = answerCRadio;
+                        break;
+                    case "D":
+                        answered = answerDRadio;
+                        break;
+                }
 
-            if(answered != null) {
-                answered.toggle();
-                answered.setEnabled(true);
-                if(!question.getSelection().equals(question.getSolution())) {
-                    img = ContextCompat.getDrawable(this, android.R.drawable.ic_delete);
-                    img.setBounds(0, 0, 60, 60);
-                    answered.setCompoundDrawables(null, null, img, null);
+                if (answered != null) {
+                    answered.toggle();
+                    answered.setEnabled(true);
+                    if (!question.getSelection().equals(question.getSolution())) {
+                        Drawable failureImg = ContextCompat.getDrawable(this, android.R.drawable.ic_delete);
+                        failureImg.setBounds(0, 0, 60, 60);
+                        answered.setCompoundDrawables(null, null, failureImg, null);
+                    }
                 }
             }
+        }
+
+        final TextView timer = (TextView) findViewById(R.id.question_timer);
+        if(question.getSelection() != null) {
+            if (question.getSelection().equals(question.getSolution())) {
+                timer.setText("Respuesta correcta");
+            } else if (question.getSelection().equals("null")) {
+                timer.setText("No sabe / No contesta");
+            } else {
+                timer.setText("Respuesta incorrecta");
+            }
+        } else if (now.after(expiration)) {
+            timer.setText("No sabe / No contesta");
+        } else {
+            long millis = expiration.getTime() - now.getTime();
+            new CountDownTimer(millis, 1000) {
+                public void onTick(long millis) {
+                    long days = TimeUnit.MILLISECONDS.toDays(millis);
+                    if (days > 0) {
+                        timer.setText("Tiempo: " + days + " días");
+                    } else {
+                        String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis),
+                                TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                                TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+
+                        timer.setText("Tiempo: " + hms);
+                    }
+                }
+
+                public void onFinish() {
+                    answerARadio.setEnabled(false);
+                    answerBRadio.setEnabled(false);
+                    answerCRadio.setEnabled(false);
+                    answerDRadio.setEnabled(false);
+                    ncBtn.setEnabled(false);
+                    submitBtn.setEnabled(false);
+
+                    successImg.setBounds(0, 0, 60, 60);
+                    switch (question.getSolution()) {
+                        case "A":
+                            answerARadio.setCompoundDrawables(null, null, successImg, null);
+                            break;
+                        case "B":
+                            answerBRadio.setCompoundDrawables(null, null, successImg, null);
+                            break;
+                        case "C":
+                            answerCRadio.setCompoundDrawables(null, null, successImg, null);
+                            break;
+                        case "D":
+                            answerDRadio.setCompoundDrawables(null, null, successImg, null);
+                            break;
+                    }
+                    timer.setText("No sabe / No contesta");
+                }
+            }.start();
         }
     }
 
@@ -133,7 +216,26 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
                 ncDialogBuilder.setPositiveButton("Seguro, no contestar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        finish(); // TODO complete with request
+                        ServerInterface server = ServerInterface.getServer(QuestionActivity.this);
+                        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                        progressBar.setVisibility(View.VISIBLE);
+                        server.newAnswer(userId, question.getId(), "null", time,
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String s) {
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        Toast.makeText(QuestionActivity.this, "Respuesta enviada: " + response, Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    }
+                                }
+                                , new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError volleyError) {
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        Toast.makeText(QuestionActivity.this, "Ooops! Algo fue mal", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                        );
                     }
                 });
                 ncDialogBuilder.setNegativeButton("Volver", new DialogInterface.OnClickListener() {
@@ -146,15 +248,32 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
                 ncDialog.show();
                 break;
             case R.id.submit:
-                // TODO make request
                 AlertDialog.Builder submitDialogBuilder = new AlertDialog.Builder(this);
                 submitDialogBuilder.setTitle("Enviar respuesta");
                 submitDialogBuilder.setMessage("¿Desea enviar la respuesta? (Esta acción no se podrá modificar)");
                 submitDialogBuilder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(QuestionActivity.this, "Respuesta al servidor " + response, Toast.LENGTH_SHORT).show();
-                        finish(); // TODO complete with request
+                        ServerInterface server = ServerInterface.getServer(QuestionActivity.this);
+                        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                        progressBar.setVisibility(View.VISIBLE);
+                        server.newAnswer(userId, question.getId(), response, time,
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String s) {
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        Toast.makeText(QuestionActivity.this, "Respuesta enviada: No sabe / No contesta", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    }
+                                }
+                                , new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError volleyError) {
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        Toast.makeText(QuestionActivity.this, "Ooops! Algo fue mal", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                        );
                     }
                 });
                 submitDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {

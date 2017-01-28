@@ -41,7 +41,7 @@
         android:layout_toEndOf="@+id/question_icon"
         android:layout_toRightOf="@+id/question_icon"
         android:layout_below="@+id/question_title"
-        android:textAppearance="@android:style/TextAppearance.Large"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
         android:textSize="21sp" />
 
 </RelativeLayout>

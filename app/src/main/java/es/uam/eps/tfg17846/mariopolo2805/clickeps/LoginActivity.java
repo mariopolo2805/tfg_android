@@ -98,7 +98,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                                     } catch (Exception e) {
                                         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(LoginActivity.this);
                                         dialogBuilder.setTitle("Ooops!");
-                                        dialogBuilder.setMessage("Algo fue mal en la petición");
+                                        dialogBuilder.setMessage("Algo fue mal");
                                         dialogBuilder.setNeutralButton("Atrás", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
