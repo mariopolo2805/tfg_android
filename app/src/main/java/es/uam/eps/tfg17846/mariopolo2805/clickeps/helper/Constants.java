@@ -2,7 +2,7 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps.helper;
 
 public abstract class Constants {
 
-    final public static String BASE_URL = "http://192.168.236.101:9000";
+    final public static String BASE_URL = "http://tfg17846.herokuapp.com";
     final public static String LOGIN_URI = "/login";
     final public static String GROUPS_URI = "/groupsOfStudent";
     final public static String SECTIONS_URI = "/sectionsOfGroup";

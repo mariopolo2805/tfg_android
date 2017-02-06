@@ -16,8 +16,7 @@
         android:layout_marginTop="6dp"
         android:adjustViewBounds="true"
         android:maxHeight="35dp"
-        android:maxWidth="74dp"
-        android:src="@android:drawable/ic_menu_help" />
+        android:maxWidth="74dp" />
 
     <TextView
         android:id="@+id/question_title"

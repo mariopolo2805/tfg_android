@@ -7,7 +7,6 @@ import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -19,11 +18,8 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Question;
@@ -70,18 +66,11 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
         answerCRadio.setText(question.getOptionC());
         answerDRadio.setText(question.getOptionD());
 
-        TimeZone tz = TimeZone.getDefault();
         Date now = new Date();
-        Date expiration;
-        int offsetFromUtc = tz.getOffset(now.getTime()) / (1000 * 60 * 60);
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(question.getExpiration());
-        cal.add(Calendar.HOUR_OF_DAY, offsetFromUtc);
-        expiration = cal.getTime();
 
         final Drawable successImg = ContextCompat.getDrawable(this, android.R.drawable.presence_online);
 
-        if(question.getSelection() != null || now.after(expiration)) {
+        if(question.getSelection() != null || now.after(question.getExpiration())) {
             answerARadio.setEnabled(false);
             answerBRadio.setEnabled(false);
             answerCRadio.setEnabled(false);
@@ -143,10 +132,10 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
             } else {
                 timer.setText("Respuesta incorrecta");
             }
-        } else if (now.after(expiration)) {
+        } else if (now.after(question.getExpiration())) {
             timer.setText("No sabe / No contesta");
         } else {
-            long millis = expiration.getTime() - now.getTime();
+            long millis = question.getExpiration().getTime() - now.getTime();
             new CountDownTimer(millis, 1000) {
                 public void onTick(long millis) {
                     long days = TimeUnit.MILLISECONDS.toDays(millis);
@@ -224,7 +213,7 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
                                     @Override
                                     public void onResponse(String s) {
                                         progressBar.setVisibility(View.INVISIBLE);
-                                        Toast.makeText(QuestionActivity.this, "Respuesta enviada: " + response, Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(QuestionActivity.this, "Respuesta enviada: No sabe / No contesta", Toast.LENGTH_SHORT).show();
                                         finish();
                                     }
                                 }
@@ -262,7 +251,7 @@ public class QuestionActivity extends AppCompatActivity implements OnClickListen
                                     @Override
                                     public void onResponse(String s) {
                                         progressBar.setVisibility(View.INVISIBLE);
-                                        Toast.makeText(QuestionActivity.this, "Respuesta enviada: No sabe / No contesta", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(QuestionActivity.this, "Respuesta enviada: " + response, Toast.LENGTH_SHORT).show();
                                         finish();
                                     }
                                 }

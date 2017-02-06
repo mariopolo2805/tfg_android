@@ -3,7 +3,6 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 import android.app.Activity;
 import android.content.Context;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +10,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import es.uam.eps.tfg17846.mariopolo2805.clickeps.helper.Question;
@@ -57,14 +54,7 @@ public class QuestionItemAdapter extends BaseAdapter {
         TextView title = (TextView) view.findViewById(R.id.question_title);
         title.setText(question.getQuestion());
 
-        TimeZone tz = TimeZone.getDefault();
         Date now = new Date();
-        Date expiration;
-        int offsetFromUtc = tz.getOffset(now.getTime()) / (1000 * 60 * 60);
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(question.getExpiration());
-        cal.add(Calendar.HOUR_OF_DAY, offsetFromUtc);
-        expiration = cal.getTime();
 
         final ImageView image = (ImageView) view.findViewById(R.id.question_icon);
         final TextView timer = (TextView) view.findViewById(R.id.question_timer);
@@ -77,11 +67,12 @@ public class QuestionItemAdapter extends BaseAdapter {
             } else {
                 timer.setText("Respuesta incorrecta");
             }
-        } else if (now.after(expiration)) {
+        } else if (now.after(question.getExpiration())) {
             image.setImageResource(android.R.drawable.ic_lock_lock);
             timer.setText("No sabe / No contesta");
         } else {
-            long millis = expiration.getTime() - now.getTime();
+            image.setImageResource(android.R.drawable.ic_menu_help);
+            long millis = question.getExpiration().getTime() - now.getTime();
             new CountDownTimer(millis, 1000) {
                 public void onTick(long millis) {
                     long days = TimeUnit.MILLISECONDS.toDays(millis);
