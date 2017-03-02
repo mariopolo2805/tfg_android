@@ -13,10 +13,11 @@ public class Question implements Serializable {
     private String optionD;
     private String solution;
     private Date expiration;
+    private Date activation;
     // Secondary atributes
     private String selection;
 
-    public Question(String id, String question, String optionA, String optionB, String optionC, String optionD, String solution, Date expiration) {
+    public Question(String id, String question, String optionA, String optionB, String optionC, String optionD, String solution, Date expiration, Date activation) {
         this.id = id;
         this.question = question;
         this.optionA = optionA;
@@ -25,6 +26,7 @@ public class Question implements Serializable {
         this.optionD = optionD;
         this.solution = solution;
         this.expiration = expiration;
+        this.activation = activation;
         this.selection = null;
     }
 
@@ -58,6 +60,10 @@ public class Question implements Serializable {
 
     public Date getExpiration() {
         return expiration;
+    }
+
+    public Date getActivation() {
+        return activation;
     }
 
     public String getSelection() {

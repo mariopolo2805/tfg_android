@@ -3,8 +3,10 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -17,6 +19,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -58,7 +61,7 @@ public class QuestionListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -104,6 +107,7 @@ public class QuestionListActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.INVISIBLE);
                         try {
                             questions.clear();
+                            Date today = new Date();
                             JSONArray questionJSONList = new JSONArray(s);
                             for (int i = 0; i < questionJSONList.length(); i++) {
                                 JSONObject questionJSON = questionJSONList.getJSONObject(i);
@@ -115,8 +119,12 @@ public class QuestionListActivity extends AppCompatActivity {
                                         questionJSON.getString("answerC"),
                                         questionJSON.getString("answerD"),
                                         questionJSON.getString("solution"),
-                                        fmt.parse(questionJSON.getString("expiration")));
-                                questions.add(q);
+                                        fmt.parse(questionJSON.getString("expiration")),
+                                        fmt.parse(questionJSON.getString("activation")));
+
+                                if(q.getActivation().before(today)) {
+                                    questions.add(q);
+                                }
 
                                 // Match with answer
                                 Iterator<Answer> itr = answers.iterator();
@@ -153,6 +161,13 @@ public class QuestionListActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.INVISIBLE);
                     }
                 });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        questionList.invalidate();
+        ((BaseAdapter) questionList.getAdapter()).notifyDataSetChanged();
     }
 
 }

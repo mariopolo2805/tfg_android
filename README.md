@@ -5,4 +5,4 @@ Autor: Mario Antonio Polo Daza
 
 -------------------------------------------------------------
 
-El instalador se puede descargar aquí [clickEPS.apk](https://www.dropbox.com/s/dlyxmuoogd8q7ns/clickEPS.apk?dl=0)
+El instalador se puede descargar aquí [clickEPS.apk](https://www.dropbox.com/s/qcajm8o7hvnxbnn/clickEPS.apk?dl=0)
