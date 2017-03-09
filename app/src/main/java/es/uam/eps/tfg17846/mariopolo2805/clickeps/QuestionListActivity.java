@@ -2,8 +2,8 @@ package es.uam.eps.tfg17846.mariopolo2805.clickeps;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -55,15 +55,10 @@ public class QuestionListActivity extends AppCompatActivity {
         userId = getIntent().getExtras().getString(Constants.USERID_KEY);
         group = (Group) getIntent().getExtras().getSerializable(Constants.GROUP_KEY);
         section = (Section) getIntent().getExtras().getSerializable(Constants.SECTION_KEY);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
         progressBar.setVisibility(View.VISIBLE);
+
+        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
         ServerInterface server = ServerInterface.getServer(QuestionListActivity.this);
 
@@ -72,7 +67,6 @@ public class QuestionListActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
-                        progressBar.setVisibility(View.INVISIBLE);
                         try {
                             answers.clear();
                             JSONArray answerJSONList = new JSONArray(s);
@@ -87,7 +81,6 @@ public class QuestionListActivity extends AppCompatActivity {
                                 answers.add(a);
                             }
                         } catch (Exception e) {
-                            progressBar.setVisibility(View.INVISIBLE);
                             Toast.makeText(QuestionListActivity.this, "Hubo un problema al solicitar las respuestas del alumno", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -95,72 +88,90 @@ public class QuestionListActivity extends AppCompatActivity {
                 , new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        progressBar.setVisibility(View.INVISIBLE);
+
                     }
                 });
+    }
 
-        server.questionsOfStudent(
-                userId, section.getId(),
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String s) {
-                        progressBar.setVisibility(View.INVISIBLE);
-                        try {
-                            questions.clear();
-                            Date today = new Date();
-                            JSONArray questionJSONList = new JSONArray(s);
-                            for (int i = 0; i < questionJSONList.length(); i++) {
-                                JSONObject questionJSON = questionJSONList.getJSONObject(i);
-                                Question q = new Question(
-                                        questionJSON.getString("idQuestion"),
-                                        questionJSON.getString("text"),
-                                        questionJSON.getString("answerA"),
-                                        questionJSON.getString("answerB"),
-                                        questionJSON.getString("answerC"),
-                                        questionJSON.getString("answerD"),
-                                        questionJSON.getString("solution"),
-                                        fmt.parse(questionJSON.getString("expiration")),
-                                        fmt.parse(questionJSON.getString("activation")));
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-                                if(q.getActivation().before(today)) {
-                                    questions.add(q);
-                                }
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-                                // Match with answer
-                                Iterator<Answer> itr = answers.iterator();
-                                while(itr.hasNext()) {
-                                    Answer a = itr.next();
-                                    if (a.getIdQuestion() == q.getId()) {
-                                        q.setSelection(a.getSelection());
+                ServerInterface server = ServerInterface.getServer(QuestionListActivity.this);
+
+                server.questionsOfStudent(
+                        userId, section.getId(),
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String s) {
+                                try {
+                                    questions.clear();
+                                    Date today = new Date();
+                                    JSONArray questionJSONList = new JSONArray(s);
+                                    for (int i = 0; i < questionJSONList.length(); i++) {
+                                        JSONObject questionJSON = questionJSONList.getJSONObject(i);
+                                        Question q = new Question(
+                                                questionJSON.getString("idQuestion"),
+                                                questionJSON.getString("text"),
+                                                questionJSON.getString("answerA"),
+                                                questionJSON.getString("answerB"),
+                                                questionJSON.getString("answerC"),
+                                                questionJSON.getString("answerD"),
+                                                questionJSON.getString("solution"),
+                                                fmt.parse(questionJSON.getString("expiration")),
+                                                fmt.parse(questionJSON.getString("activation")));
+
+                                        if(q.getActivation().before(today)) {
+                                            questions.add(q);
+                                        }
+
+                                        // Match with answer
+                                        Iterator<Answer> itr = answers.iterator();
+                                        while(itr.hasNext()) {
+                                            Answer a = itr.next();
+                                            if (a.getIdQuestion() == q.getId()) {
+                                                q.setSelection(a.getSelection());
+                                            }
+                                        }
                                     }
+
+                                    adapter = new QuestionItemAdapter(QuestionListActivity.this, questions);
+                                    questionList.setAdapter(adapter);
+
+                                    questionList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                        @Override
+                                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                            Question selectedQuestion = (Question) adapter.getItem(i);
+                                            Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONACTIVITY");
+                                            intent.putExtra(Constants.USERID_KEY, userId);
+                                            intent.putExtra(Constants.QUESTION_KEY, selectedQuestion);
+                                            startActivity(intent);
+                                        }
+                                    });
+
+                                    if(questions.size() == 0) {
+                                        Toast.makeText(QuestionListActivity.this, "Todavía no existen preguntas en este tema", Toast.LENGTH_SHORT).show();
+                                    }
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                } catch (Exception e) {
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                    Toast.makeText(QuestionListActivity.this, "Hubo un problema al solicitar las preguntas", Toast.LENGTH_SHORT).show();
                                 }
                             }
-
-                            adapter = new QuestionItemAdapter(QuestionListActivity.this, questions);
-                            questionList.setAdapter(adapter);
-
-                            questionList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                    Question selectedQuestion = (Question) adapter.getItem(i);
-                                    Intent intent = new Intent("es.uam.eps.tfg17846.mariopolo2805.clickeps.QUESTIONACTIVITY");
-                                    intent.putExtra(Constants.USERID_KEY, userId);
-                                    intent.putExtra(Constants.QUESTION_KEY, selectedQuestion);
-                                    startActivity(intent);
-                                }
-                            });
-                        } catch (Exception e) {
-                            progressBar.setVisibility(View.INVISIBLE);
-                            Toast.makeText(QuestionListActivity.this, "Hubo un problema al solicitar las preguntas", Toast.LENGTH_SHORT).show();
                         }
-                    }
-                }
-                , new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-                });
+                        , new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError volleyError) {
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
+                        });
+            }
+        }, 1000);
     }
 
     @Override

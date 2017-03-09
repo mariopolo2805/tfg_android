@@ -67,10 +67,7 @@ public class QuestionItemAdapter extends BaseAdapter {
             } else {
                 timer.setText("Respuesta incorrecta");
             }
-        } else if (now.after(question.getExpiration())) {
-            image.setImageResource(android.R.drawable.ic_lock_lock);
-            timer.setText("No sabe / No contesta");
-        } else {
+        } else if (now.before(question.getExpiration())) {
             image.setImageResource(android.R.drawable.ic_menu_help);
             long millis = question.getExpiration().getTime() - now.getTime();
             new CountDownTimer(millis, 1000) {
@@ -92,6 +89,9 @@ public class QuestionItemAdapter extends BaseAdapter {
                     timer.setText("No sabe / No contesta");
                 }
             }.start();
+        } else if (now.after(question.getExpiration())) {
+            image.setImageResource(android.R.drawable.ic_lock_lock);
+            timer.setText("No sabe / No contesta");
         }
 
         return view;
