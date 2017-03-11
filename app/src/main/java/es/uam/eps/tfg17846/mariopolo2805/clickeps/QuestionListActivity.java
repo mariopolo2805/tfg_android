@@ -55,6 +55,11 @@ public class QuestionListActivity extends AppCompatActivity {
         userId = getIntent().getExtras().getString(Constants.USERID_KEY);
         group = (Group) getIntent().getExtras().getSerializable(Constants.GROUP_KEY);
         section = (Section) getIntent().getExtras().getSerializable(Constants.SECTION_KEY);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -91,11 +96,6 @@ public class QuestionListActivity extends AppCompatActivity {
 
                     }
                 });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
